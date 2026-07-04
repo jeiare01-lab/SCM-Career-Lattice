@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Supply Chain Career Lattice — PGB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0D1B3D;
+    --navy-2:#16255c;
+    --cream:#FEF9F3;
+    --orange:#E65100;
+    --teal:#0E6E5C;
+    --indigo:#5B4B8A;
+    --diag:#A6325B;
+    --grey:#8b8f9a;
+    --grey-light:#e8e6e0;
+    --card-bg:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--navy);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    padding-bottom:12px;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+
+  /* Header */
+  header{
+    background:var(--navy);
+    color:var(--cream);
+    padding:22px 18px 16px;
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:1.5rem;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
+  header p{
+    margin:0;
+    font-size:.82rem;
+    color:#c9d0e6;
+    line-height:1.4;
+  }
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .info-btn{
+    flex:none;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:20px;
+    padding:7px 13px;
+    font-size:.75rem;
+    font-weight:600;
+    font-family:'IBM Plex Sans',sans-serif;
+    cursor:pointer;
+  }
+
+  /* Trail bar */
+  .trailbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:#fff;
+    border-bottom:1px solid var(--grey-light);
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .trail-scroll{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    padding:2px 0;
+  }
+  .trail-scroll::-webkit-scrollbar{display:none;}
+  .trail-chip{
+    flex:none;
+    background:var(--navy);
+    color:#fff;
+    font-size:.72rem;
+    font-weight:600;
+    padding:6px 10px;
+    border-radius:14px;
+    white-space:nowrap;
+    cursor:pointer;
+    border:none;
+  }
+  .trail-empty{
+    font-size:.78rem;
+    color:var(--grey);
+    font-style:italic;
+  }
+  .trail-arrow{
+    flex:none;
+    font-size:.85rem;
+    font-weight:700;
+  }
+  .trail-arrow.vertical{color:var(--navy);}
+  .trail-arrow.lateral{color:var(--orange);}
+  .trail-arrow.diagonal{color:var(--diag);}
+  .clear-btn{
+    flex:none;
+    background:none;
+    border:1px solid var(--grey-light);
+    color:var(--navy);
+    font-size:.7rem;
+    font-weight:600;
+    border-radius:12px;
+    padding:6px 10px;
+    cursor:pointer;
+  }
+
+  main{padding:14px 12px 100px;}
+
+  /* Accordion */
+  .grade-section{
+    margin-bottom:10px;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid var(--grey-light);
+    background:#fff;
+  }
+  .grade-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 14px;
+    cursor:pointer;
+    background:#fff;
+  }
+  .grade-head .badge{
+    background:var(--navy);
+    color:#fff;
+    font-size:.72rem;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:10px;
+    margin-right:10px;
+  }
+  .grade-head-title{
+    display:flex;
+    align-items:center;
+    font-size:.95rem;
+    font-weight:600;
+  }
+  .grade-head .chev{
+    transition:transform .2s ease;
+    color:var(--grey);
+    font-size:.8rem;
+  }
+  .grade-section.open .chev{transform:rotate(180deg);}
+  .grade-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .25s ease;
+    border-top:1px solid transparent;
+  }
+  .grade-section.open .grade-body{
+    border-top:1px solid var(--grey-light);
+  }
+  .role-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    cursor:pointer;
+    border-bottom:1px solid #f2f0ea;
+  }
+  .role-item:last-child{border-bottom:none;}
+  .role-item.active{background:#fff6ee;}
+  .unit-dot{
+    flex:none;
+    width:10px;height:10px;
+    border-radius:50%;
+  }
+  .role-item-text{flex:1;}
+  .role-item-unit{
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--grey);
+    font-weight:600;
+  }
+  .role-item-title{
+    font-size:.9rem;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .role-item-arrow{color:var(--grey);font-size:.85rem;}
+
+  /* Legend modal */
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background:rgba(13,27,61,.5);
+    display:none;
+    z-index:50;
+    align-items:flex-end;
+  }
+  .modal-backdrop.show{display:flex;}
+  .legend-panel{
+    background:#fff;
+    width:100%;
+    border-radius:18px 18px 0 0;
+    padding:20px 18px 26px;
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .legend-panel h3{margin:0 0 10px;font-size:1.05rem;}
+  .legend-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:.85rem;}
+  .legend-swatch{width:22px;height:4px;border-radius:2px;flex:none;}
+  .legend-dot{width:14px;height:14px;border-radius:50%;flex:none;}
+  .scale-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:.82rem;}
+  .scale-num{
+    flex:none;width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:.72rem;
+  }
+  .close-legend{
+    margin-top:14px;width:100%;
+    background:var(--navy);color:#fff;border:none;
+    padding:11px;border-radius:10px;font-weight:600;font-size:.85rem;
+  }
+
+  /* Drawer */
+  .drawer-backdrop{
+    position:fixed;inset:0;
+    background:rgba(13,27,61,.45);
+    display:none;
+    z-index:40;
+  }
+  .drawer-backdrop.show{display:block;}
+  .drawer{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    background:var(--cream);
+    border-radius:20px 20px 0 0;
+    max-height:88vh;
+    overflow-y:auto;
+    transform:translateY(100%);
+    transition:transform .28s ease;
+    z-index:41;
+    padding-bottom:24px;
+  }
+  .drawer.show{transform:translateY(0);}
+  .drawer-handle{
+    width:38px;height:4px;background:var(--grey-light);
+    border-radius:2px;margin:10px auto 4px;
+  }
+  .drawer-head{
+    padding:6px 18px 14px;
+    border-bottom:1px solid var(--grey-light);
+  }
+  .drawer-head .unit-tag{
+    display:inline-block;
+    font-size:.68rem;font-weight:700;letter-spacing:.4px;
+    text-transform:uppercase;
+    padding:3px 9px;border-radius:8px;
+    color:#fff;margin-bottom:6px;
+  }
+  .drawer-head h2{
+    margin:0 0 4px;
+    font-size:1.25rem;
+  }
+  .drawer-head .grade-line{
+    font-size:.78rem;color:var(--grey);font-weight:600;
+  }
+  .drawer-section{
+    padding:14px 18px;
+    border-bottom:1px solid var(--grey-light);
+  }
+  .drawer-section h4{
+    margin:0 0 8px;
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:var(--orange);
+    font-weight:700;
+  }
+  .func-blurb{font-size:.88rem;line-height:1.5;margin:0;}
+  .gwc-row{margin-bottom:10px;}
+  .gwc-label{font-size:.75rem;font-weight:700;color:var(--navy);margin-bottom:2px;}
+  .gwc-text{font-size:.84rem;line-height:1.45;color:#333;margin:0;}
+  .comp-group{margin-bottom:12px;}
+  .comp-group-title{font-size:.72rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+  .comp-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .comp-name{flex:1;font-size:.8rem;color:#333;}
+  .comp-bar{
+    flex:none;
+    display:flex;gap:2px;
+  }
+  .comp-seg{width:10px;height:10px;border-radius:2px;background:var(--grey-light);}
+  .comp-seg.filled{background:var(--orange);}
+  .td-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+  .td-chip{
+    background:#fff;
+    border:1px solid var(--grey-light);
+    font-size:.74rem;
+    padding:5px 9px;
+    border-radius:10px;
+    color:#333;
+  }
+  .moves-group{margin-bottom:12px;}
+  .moves-group-title{
+    display:flex;align-items:center;gap:6px;
+    font-size:.78rem;font-weight:700;margin-bottom:7px;
+  }
+  .moves-group-title .dash{flex:none;width:16px;height:3px;border-radius:2px;}
+  .move-btns{display:flex;flex-direction:column;gap:6px;}
+  .move-btn{
+    text-align:left;
+    background:#fff;
+    border:1px solid var(--grey-light);
+    border-left-width:4px;
+    border-radius:10px;
+    padding:9px 11px;
+    font-size:.82rem;
+    font-weight:600;
+    color:var(--navy);
+    cursor:pointer;
+  }
+  .move-btn.vertical{border-left-color:var(--navy);}
+  .move-btn.lateral{border-left-color:var(--orange);}
+  .move-btn.diagonal{border-left-color:var(--diag);}
+  .move-empty{font-size:.78rem;color:var(--grey);font-style:italic;}
+  .drawer-actions{
+    display:flex;gap:8px;padding:14px 18px 4px;
+  }
+  .drawer-actions button{
+    flex:1;
+    padding:11px;
+    border-radius:10px;
+    font-weight:600;
+    font-size:.82rem;
+    border:none;
+    cursor:pointer;
+  }
+  .btn-start{background:var(--navy);color:#fff;}
+  .btn-close{background:#fff;color:var(--navy);border:1px solid var(--grey-light) !important;}
+
+  .pulse{animation:pulse 1s ease;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(230,81,0,.5);}
+    70%{box-shadow:0 0 0 10px rgba(230,81,0,0);}
+    100%{box-shadow:0 0 0 0 rgba(230,81,0,0);}
+  }
+
+  @media (min-width:720px){
+    main{max-width:760px;margin:0 auto;}
+    header,.trailbar{padding-left:calc((100% - 760px)/2 + 18px);padding-right:calc((100% - 760px)/2 + 18px);}
+    .drawer{max-width:520px;left:auto;right:24px;bottom:24px;border-radius:20px;max-height:82vh;}
+    .drawer-backdrop.show{display:block;}
+    .legend-panel{max-width:420px;margin:0 auto 24px;border-radius:18px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Supply Chain Career Lattice</h1>
+      <p>Procurement &middot; Warehouse &amp; Logistics &middot; Supplier &amp; Vendor Management — JG1 to JG15</p>
+    </div>
+    <button class="info-btn" onclick="toggleLegend(true)">Legend</button>
+  </div>
+</header>
+
+<div class="trailbar">
+  <div class="trail-scroll" id="trailScroll"></div>
+  <button class="clear-btn" onclick="clearPath()">Clear</button>
+</div>
+
+<main id="accordion"></main>
+
+<!-- Legend modal -->
+<div class="modal-backdrop" id="legendBackdrop" onclick="if(event.target===this)toggleLegend(false)">
+  <div class="legend-panel">
+    <h3>How to read this map</h3>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--navy)"></span> Vertical move — promotion, same functional unit</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--orange)"></span> Lateral move — same grade, different functional unit</div>
+    <div class="legend-row"><span class="legend-swatch" style="background:var(--diag)"></span> Diagonal move — promotion into a different functional unit</div>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--orange)"></span> Procurement</div>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--teal)"></span> Warehouse &amp; Logistics</div>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--indigo)"></span> Supplier &amp; Vendor Management</div>
+    <h3 style="margin-top:16px;">Competency proficiency scale</h3>
+    <div class="scale-row"><span class="scale-num" style="background:#FFF3E0;color:#7a4a12;">1</span> Basic Awareness — performs with guidance</div>
+    <div class="scale-row"><span class="scale-num" style="background:#FFD9B0;color:#7a4a12;">2</span> Developing — routine tasks, some supervision</div>
+    <div class="scale-row"><span class="scale-num" style="background:#FFB877;">3</span> Proficient — works independently</div>
+    <div class="scale-row"><span class="scale-num" style="background:#F07E2E;">4</span> Advanced — complex, cross-functional, coaches others</div>
+    <div class="scale-row"><span class="scale-num" style="background:var(--orange);">5</span> Expert / Strategic — sets direction at group level</div>
+    <button class="close-legend" onclick="toggleLegend(false)">Close</button>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="if(event.target===this)closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head" id="drawerHead"></div>
+  <div class="drawer-section" id="drawerFunction"></div>
+  <div class="drawer-section" id="drawerGwc"></div>
+  <div class="drawer-section" id="drawerCompCore"></div>
+  <div class="drawer-section" id="drawerCompFunctional"></div>
+  <div class="drawer-section" id="drawerTd"></div>
+  <div class="drawer-section" id="drawerMoves"></div>
+  <div class="drawer-actions">
+    <button class="btn-start" onclick="startHere()">Start path here</button>
+    <button class="btn-close" onclick="closeDrawer()">Close</button>
+  </div>
+</div>
+
+<script>
+const GRADES = ["JG1-3","JG4-6","JG7-9","JG10-12","JG13-15"];
+const UNITS = ["Procurement","Warehouse & Logistics","Supplier & Vendor Management"];
+const UNIT_COLOR = {
+  "Procurement":"var(--orange)",
+  "Warehouse & Logistics":"var(--teal)",
+  "Supplier & Vendor Management":"var(--indigo)"
+};
+const UNIT_HEX = {
+  "Procurement":"#E65100",
+  "Warehouse & Logistics":"#0E6E5C",
+  "Supplier & Vendor Management":"#5B4B8A"
+};
+const TITLE_TEMPLATE = {
+  "JG1-3": u => `${u} Specialist`,
+  "JG4-6": u => `${u} Generalist`,
+  "JG7-9": u => `Lead, ${u}`,
+  "JG10-12": u => `Business Partner, ${u}`,
+  "JG13-15": u => `Strategic Partner, ${u}`
+};
+const FUNCTION_TEMPLATE = {
+  "JG1-3": u => `Executes day-to-day ${u} transactions (documentation, data entry, coordination) under close supervision, following established SOPs.`,
+  "JG4-6": u => `Handles end-to-end ${u} sub-processes with moderate autonomy; may support more than one subsidiary.`,
+  "JG7-9": u => `Owns the ${u} process area for a subsidiary or SBU; supervises a small team; ensures SLA and compliance targets are met.`,
+  "JG10-12": u => `Acts as embedded ${u} advisor to a business unit's leadership; translates business goals into ${u} strategy.`,
+  "JG13-15": u => `Shapes group-wide ${u} strategy and policy; advises the PGB Group Leadership Team on ${u} risk, cost, and resilience.`
+};
+const TIME_BY_GRADE = {
+  "JG1-3":"1.5 - 2 years","JG4-6":"2 - 3 years","JG7-9":"3 - 4 years",
+  "JG10-12":"3 - 5 years","JG13-15":"Top of ladder - via succession planning"
+};
+const ROLE_INFO = {
+  "JG1-3":{
+    get_it:"Understands PO creation, inventory tabulation, receiving/delivery documentation, and basic PGB/BIR compliance requirements.",
+    want_it:"Draws satisfaction from structured, process-driven work with clear, visible daily output.",
+    capacity:"Detail-oriented; handles high-volume repetitive transactions accurately within deadlines; foundational Excel/ERP skills.",
+    td_technical:["SCM 101 orientation","ERP/system basics","PGB documentation & compliance standards","Foundational Excel"],
+    td_behavioral:["Time management","Attention to detail","PGB Core Values orientation"],
+    td_programs:["STEP UP Program (V1)","Internal onboarding modules"]
+  },
+  "JG4-6":{
+    get_it:"Sees how sourcing, warehousing, and logistics interconnect; reads demand/supply data and spots process gaps.",
+    want_it:"Motivated by broader problem-solving and being the go-to person across a wider process scope.",
+    capacity:"Manages multiple concurrent workstreams; coordinates with 3+ stakeholder groups; intermediate Excel/reporting skills.",
+    td_technical:["Cross-functional SCM process training","Intermediate Excel/reporting","Vendor management basics"],
+    td_behavioral:["Structured problem-solving","Stakeholder communication","EOS 101 fundamentals"],
+    td_programs:["Construction Supply Chain 101","Project Management 101","STEP UP CASME edition"]
+  },
+  "JG7-9":{
+    get_it:"Translates SBU targets into process KPIs; understands team supervision and escalation protocols.",
+    want_it:"Driven by developing people and owning outcomes, not just completing tasks.",
+    capacity:"Supervises 3-8 staff; manages vendor/contractor relationships; basic cost-impact literacy; conflict resolution skills.",
+    td_technical:["KPI & dashboard management","Cost/budget literacy","Contract & SLA management"],
+    td_behavioral:["People supervision & coaching","Conflict resolution","GWC-based performance management"],
+    td_programs:["PGB Manager AI orientation","EOS Leadership fundamentals","First-line leadership program"]
+  },
+  "JG10-12":{
+    get_it:"Understands the SBU's business model well enough to proactively shape strategy; fluent in cross-subsidiary tradeoffs.",
+    want_it:"Energized by influencing business leaders and owning business outcomes, not only functional metrics.",
+    capacity:"Operates as a peer advisor to SBU Heads/EDs; strong stakeholder management and commercial acumen.",
+    td_technical:["Strategic sourcing & category management","Supply chain risk & scenario planning","Business case modeling"],
+    td_behavioral:["Executive stakeholder influence","Negotiation","Change management"],
+    td_programs:["EOS Integrator/Visionary exposure","Cross-SBU rotation","External SCM strategy certification"]
+  },
+  "JG13-15":{
+    get_it:"Understands PGB's group-wide strategy and how supply chain resilience ties to enterprise risk.",
+    want_it:"Driven by shaping long-term direction and building organizational capability at enterprise scale.",
+    capacity:"Advises the Group Leadership Team; manages enterprise risk/cost agendas; leads change across SBUs.",
+    td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"],
+    td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"],
+    td_programs:["Executive education, SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role"]
+  }
+};
+const CORE_LEADERSHIP = {
+  "Core Competencies":[
+    ["Communication",[2,3,3,4,5]],
+    ["Problem Solving & Analytical Thinking",[2,3,4,4,5]],
+    ["Process Compliance & Attention to Detail",[3,3,3,2,2]],
+    ["Collaboration & Teamwork",[2,3,3,4,4]],
+    ["Adaptability & Resilience",[2,3,3,4,5]]
+  ],
+  "Leadership Competencies":[
+    ["People Management & Coaching",[1,2,4,4,4]],
+    ["Decision Making & Judgment",[1,2,3,4,5]],
+    ["Strategic Thinking",[1,1,2,4,5]],
+    ["Stakeholder Influence",[1,2,3,4,5]],
+    ["Change Leadership",[1,1,2,3,5]]
+  ]
+};
+const FUNCTIONAL_COMPETENCIES = {
+  "Procurement":[
+    ["Sourcing & Supplier Selection",[2,3,4,4,5]],
+    ["Purchase Order & Contract Administration",[3,4,4,3,2]],
+    ["Cost & Price Analysis / Negotiation",[2,3,4,5,5]],
+    ["Category & Spend Management",[1,2,3,4,5]],
+    ["Procurement Policy, Compliance & Risk",[2,3,4,4,5]]
+  ],
+  "Warehouse & Logistics":[
+    ["Inventory Management & Control",[3,4,4,3,2]],
+    ["Warehouse Operations & Safety Management",[2,3,4,4,3]],
+    ["Logistics & Distribution Planning",[2,3,4,5,5]],
+    ["Demand & Supply Planning",[1,2,3,4,5]],
+    ["Transportation / Fleet & Network Optimization",[1,2,3,4,5]]
+  ],
+  "Supplier & Vendor Management":[
+    ["Vendor Onboarding & Accreditation",[2,3,4,4,3]],
+    ["Supplier Performance Management",[2,3,4,5,5]],
+    ["Contract & SLA Management",[2,3,4,4,4]],
+    ["Vendor Risk Management",[1,2,3,4,5]],
+    ["Strategic Partnership & Negotiation",[1,2,3,4,5]]
+  ]
+};
+
+function nodeId(grade,unit){ return grade+"|"+unit; }
+function gradeIndex(g){ return GRADES.indexOf(g); }
+function nextGrade(g){ const i=gradeIndex(g); return i<GRADES.length-1?GRADES[i+1]:null; }
+function getNode(grade,unit){
+  return {
+    grade, unit,
+    title: TITLE_TEMPLATE[grade](unit),
+    func: FUNCTION_TEMPLATE[grade](unit),
+    time: TIME_BY_GRADE[grade],
+    info: ROLE_INFO[grade]
+  };
+}
+function computeMoves(grade,unit){
+  const ng = nextGrade(grade);
+  const others = UNITS.filter(u=>u!==unit);
+  return {
+    vertical: ng ? [{grade:ng, unit}] : [],
+    verticalTop: ng ? null : "Group SCM Head / CSCO track (beyond current ladder)",
+    lateral: others.map(u=>({grade, unit:u})),
+    diagonal: ng ? others.map(u=>({grade:ng, unit:u})) : [],
+    diagonalTop: ng ? null : "Group-wide strategy roles (e.g., Group Risk, Group Transformation)"
+  };
+}
+
+let path = []; // array of {grade, unit, moveType}
+let focusedId = null;
+
+function renderAccordion(){
+  const acc = document.getElementById('accordion');
+  acc.innerHTML = '';
+  GRADES.forEach((grade, gi)=>{
+    const section = document.createElement('div');
+    section.className = 'grade-section' + (gi===0?' open':'');
+    section.id = 'section-'+grade;
+    const head = document.createElement('div');
+    head.className = 'grade-head';
+    head.innerHTML = `<div class="grade-head-title"><span class="badge">${grade}</span> ${gradeLabel(grade)}</div><span class="chev">&#9660;</span>`;
+    head.onclick = ()=> section.classList.toggle('open');
+    section.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'grade-body';
+    UNITS.forEach(unit=>{
+      const id = nodeId(grade,unit);
+      const item = document.createElement('div');
+      item.className = 'role-item';
+      item.id = 'item-'+id;
+      item.innerHTML = `<span class="unit-dot" style="background:${UNIT_HEX[unit]}"></span>
+        <div class="role-item-text">
+          <div class="role-item-unit">${unit}</div>
+          <div class="role-item-title">${TITLE_TEMPLATE[grade](unit)}</div>
+        </div>
+        <span class="role-item-arrow">&#8250;</span>`;
+      item.onclick = ()=> openDrawer(grade, unit);
+      body.appendChild(item);
+    });
+    section.appendChild(body);
+    // set max-height for open section after append
+    acc.appendChild(section);
+  });
+  syncOpenHeights();
+}
+function gradeLabel(grade){
+  const map = {"JG1-3":"Specialist band","JG4-6":"Generalist band","JG7-9":"Lead band","JG10-12":"Business Partner band","JG13-15":"Strategic Partner band"};
+  return map[grade];
+}
+function syncOpenHeights(){
+  document.querySelectorAll('.grade-section').forEach(sec=>{
+    const body = sec.querySelector('.grade-body');
+    if(sec.classList.contains('open')){ body.style.maxHeight = body.scrollHeight+'px'; }
+    else{ body.style.maxHeight = '0px'; }
+  });
+}
+// re-check heights on any accordion toggle click
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.grade-head')){ setTimeout(syncOpenHeights, 10); }
+});
+
+function compBars(list, color){
+  return list.map(([name, levels], idx)=>{
+    return `<div class="comp-row"><div class="comp-name">${name}</div><div class="comp-bar">${segHtml(levels, color)}</div></div>`;
+  }).join('');
+}
+function segHtml(levels, color){
+  // levels is array of 5 (one per grade); we only show current grade's value as filled dots out of 5
+  return '';
+}
+
+function openDrawer(grade, unit, moveType){
+  focusedId = nodeId(grade,unit);
+  const node = getNode(grade,unit);
+  const moves = computeMoves(grade,unit);
+
+  document.querySelectorAll('.role-item').forEach(el=>el.classList.remove('active'));
+  const activeEl = document.getElementById('item-'+focusedId);
+  if(activeEl){ activeEl.classList.add('active'); }
+
+  // expand the relevant grade section
+  const sec = document.getElementById('section-'+grade);
+  if(sec && !sec.classList.contains('open')){ sec.classList.add('open'); }
+  syncOpenHeights();
+
+  document.getElementById('drawerHead').innerHTML = `
+    <span class="unit-tag" style="background:${UNIT_HEX[unit]}">${unit}</span>
+    <h2>${node.title}</h2>
+    <div class="grade-line">${grade} &middot; Est. time to progress: ${node.time}</div>
+  `;
+  document.getElementById('drawerFunction').innerHTML = `<h4>What this role does</h4><p class="func-blurb">${node.func}</p>`;
+  document.getElementById('drawerGwc').innerHTML = `
+    <h4>GWC Criteria</h4>
+    <div class="gwc-row"><div class="gwc-label">Get It</div><p class="gwc-text">${node.info.get_it}</p></div>
+    <div class="gwc-row"><div class="gwc-label">Want It</div><p class="gwc-text">${node.info.want_it}</p></div>
+    <div class="gwc-row"><div class="gwc-label">Capacity</div><p class="gwc-text">${node.info.capacity}</p></div>
+  `;
+
+  const gi = gradeIndex(grade);
+  let coreHtml = '<h4>Core &amp; Leadership Competencies</h4>';
+  Object.entries(CORE_LEADERSHIP).forEach(([cat, comps])=>{
+    coreHtml += `<div class="comp-group"><div class="comp-group-title">${cat}</div>`;
+    comps.forEach(([name, levels])=>{
+      coreHtml += compRowHtml(name, levels[gi], 'var(--navy)');
+    });
+    coreHtml += `</div>`;
+  });
+  document.getElementById('drawerCompCore').innerHTML = coreHtml;
+
+  let funcHtml = `<h4>${unit} Competencies</h4><div class="comp-group">`;
+  FUNCTIONAL_COMPETENCIES[unit].forEach(([name, levels])=>{
+    funcHtml += compRowHtml(name, levels[gi], UNIT_HEX[unit]);
+  });
+  funcHtml += `</div>`;
+  document.getElementById('drawerCompFunctional').innerHTML = funcHtml;
+
+  document.getElementById('drawerTd').innerHTML = `
+    <h4>Training &amp; Development Needs</h4>
+    <div class="gwc-row"><div class="gwc-label">Technical</div><div class="td-chips">${chipList(node.info.td_technical)}</div></div>
+    <div class="gwc-row"><div class="gwc-label">Behavioral / Leadership</div><div class="td-chips">${chipList(node.info.td_behavioral)}</div></div>
+    <div class="gwc-row"><div class="gwc-label">Recommended Programs</div><div class="td-chips">${chipList(node.info.td_programs)}</div></div>
+  `;
+
+  document.getElementById('drawerMoves').innerHTML = movesHtml(grade, unit, moves);
+
+  document.getElementById('drawer').classList.add('show');
+  document.getElementById('drawerBackdrop').classList.add('show');
+}
+function compRowHtml(name, level, colorVar){
+  let segs = '';
+  for(let i=1;i<=5;i++){
+    segs += `<span class="comp-seg${i<=level?' filled':''}" style="${i<=level?`background:${colorVar}`:''}"></span>`;
+  }
+  return `<div class="comp-row"><div class="comp-name">${name}</div><div class="comp-bar">${segs}</div></div>`;
+}
+function chipList(arr){
+  return arr.map(t=>`<span class="td-chip">${t}</span>`).join('');
+}
+function movesHtml(grade, unit, moves){
+  let html = '<h4>Where this role can lead</h4>';
+
+  html += `<div class="moves-group"><div class="moves-group-title"><span class="dash" style="background:var(--navy)"></span>Vertical — up, same unit</div><div class="move-btns">`;
+  if(moves.vertical.length){
+    moves.vertical.forEach(t=>{
+      html += `<button class="move-btn vertical" onclick="commitMove('${t.grade}','${escAttr(t.unit)}','vertical')">${TITLE_TEMPLATE[t.grade](t.unit)} <span style="color:var(--grey);font-weight:400;">(${t.grade})</span></button>`;
+    });
+  } else {
+    html += `<div class="move-empty">${moves.verticalTop}</div>`;
+  }
+  html += `</div></div>`;
+
+  html += `<div class="moves-group"><div class="moves-group-title"><span class="dash" style="background:var(--orange)"></span>Lateral — same grade, other unit</div><div class="move-btns">`;
+  moves.lateral.forEach(t=>{
+    html += `<button class="move-btn lateral" onclick="commitMove('${t.grade}','${escAttr(t.unit)}','lateral')">${TITLE_TEMPLATE[t.grade](t.unit)}</button>`;
+  });
+  html += `</div></div>`;
+
+  html += `<div class="moves-group"><div class="moves-group-title"><span class="dash" style="background:var(--diag)"></span>Diagonal — up a grade, other unit</div><div class="move-btns">`;
+  if(moves.diagonal.length){
+    moves.diagonal.forEach(t=>{
+      html += `<button class="move-btn diagonal" onclick="commitMove('${t.grade}','${escAttr(t.unit)}','diagonal')">${TITLE_TEMPLATE[t.grade](t.unit)} <span style="color:var(--grey);font-weight:400;">(${t.grade})</span></button>`;
+    });
+  } else {
+    html += `<div class="move-empty">${moves.diagonalTop}</div>`;
+  }
+  html += `</div></div>`;
+
+  return html;
+}
+function escAttr(s){ return s.replace(/'/g,"\\'"); }
+
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('show');
+  document.getElementById('drawerBackdrop').classList.remove('show');
+}
+function toggleLegend(show){
+  document.getElementById('legendBackdrop').classList.toggle('show', show);
+}
+
+function startHere(){
+  if(!focusedId) return;
+  const [grade, unit] = focusedId.split('|');
+  path = [{grade, unit, moveType:null}];
+  renderTrail();
+  pulseItem(focusedId);
+  closeDrawer();
+}
+function commitMove(grade, unit, moveType){
+  if(path.length===0 && focusedId){
+    const [g,u] = focusedId.split('|');
+    path.push({grade:g, unit:u, moveType:null});
+  }
+  path.push({grade, unit, moveType});
+  renderTrail();
+  openDrawer(grade, unit, moveType);
+  pulseItem(nodeId(grade,unit));
+}
+function pulseItem(id){
+  const el = document.getElementById('item-'+id);
+  if(el){
+    el.classList.add('pulse');
+    setTimeout(()=>el.classList.remove('pulse'), 1000);
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+function clearPath(){
+  if(focusedId){
+    const [g,u] = focusedId.split('|');
+    path = [{grade:g, unit:u, moveType:null}];
+  } else {
+    path = [];
+  }
+  renderTrail();
+}
+function renderTrail(){
+  const scroll = document.getElementById('trailScroll');
+  if(path.length===0){
+    scroll.innerHTML = `<span class="trail-empty">Tap a role below to begin your path</span>`;
+    return;
+  }
+  let html = '';
+  path.forEach((step, i)=>{
+    if(i>0){
+      const arrowMap = {vertical:'&#8593;', lateral:'&#8596;', diagonal:'&#10530;'};
+      html += `<span class="trail-arrow ${step.moveType}">${arrowMap[step.moveType]}</span>`;
+    }
+    const id = nodeId(step.grade, step.unit);
+    html += `<button class="trail-chip" onclick="openDrawer('${step.grade}','${escAttr(step.unit)}')">${TITLE_TEMPLATE[step.grade](step.unit)}</button>`;
+  });
+  scroll.innerHTML = html;
+  scroll.scrollLeft = scroll.scrollWidth;
+}
+
+renderAccordion();
+renderTrail();
+window.addEventListener('resize', syncOpenHeights);
+</script>
+</body>
+</html>
