@@ -500,18 +500,12 @@ const ROLE_INFO = {
 };
 const CORE_LEADERSHIP = {
   "Core Competencies":[
+    ["Job Knowledge & Skills",[2,3,4,4,5]],
+    ["Decision Making & Problem Solving",[2,3,4,4,5]],
+    ["Planning & Organizing",[2,3,3,4,4]],
+    ["Leadership",[1,2,4,5,5]],
     ["Communication",[2,3,3,4,5]],
-    ["Problem Solving & Analytical Thinking",[2,3,4,4,5]],
-    ["Process Compliance & Attention to Detail",[3,3,3,2,2]],
-    ["Collaboration & Teamwork",[2,3,3,4,4]],
-    ["Adaptability & Resilience",[2,3,3,4,5]]
-  ],
-  "Leadership Competencies":[
-    ["People Management & Coaching",[1,2,4,4,4]],
-    ["Decision Making & Judgment",[1,2,3,4,5]],
-    ["Strategic Thinking",[1,1,2,4,5]],
-    ["Stakeholder Influence",[1,2,3,4,5]],
-    ["Change Leadership",[1,1,2,3,5]]
+    ["Customer Focus",[2,3,3,4,4]]
   ]
 };
 const FUNCTIONAL_COMPETENCIES = {
@@ -654,14 +648,11 @@ function openDrawer(grade, unit, moveType){
   `;
 
   const gi = gradeIndex(grade);
-  let coreHtml = '<h4>Core &amp; Leadership Competencies</h4>';
-  Object.entries(CORE_LEADERSHIP).forEach(([cat, comps])=>{
-    coreHtml += `<div class="comp-group"><div class="comp-group-title">${cat}</div>`;
-    comps.forEach(([name, levels])=>{
-      coreHtml += compRowHtml(name, levels[gi], 'var(--navy)');
-    });
-    coreHtml += `</div>`;
+  let coreHtml = '<h4>Core Competencies</h4><div class="comp-group">';
+  CORE_LEADERSHIP["Core Competencies"].forEach(([name, levels])=>{
+    coreHtml += compRowHtml(name, levels[gi], 'var(--navy)');
   });
+  coreHtml += '</div>';
   document.getElementById('drawerCompCore').innerHTML = coreHtml;
 
   let funcHtml = `<h4>${unit} Competencies</h4><div class="comp-group">`;
