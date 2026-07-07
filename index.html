@@ -888,6 +888,7 @@ function clearPath(){
   renderTrail();
 }
 function renderTrail(){
+  try{ localStorage.setItem('scmLatticePath', JSON.stringify(path)); }catch(e){}
   const scroll = document.getElementById('trailScroll');
   const pfBar = document.getElementById('pathForwardBar');
   if(path.length===0){
@@ -998,8 +999,31 @@ function closePathForward(){
   document.getElementById('pathForwardBackdrop').classList.remove('show');
 }
 
+function loadSavedPath(){
+  try{
+    const raw = localStorage.getItem('scmLatticePath');
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!Array.isArray(saved) || saved.length===0) return;
+    const valid = saved.every(s => s && GRADES.includes(s.grade) && UNITS.includes(s.unit));
+    if(!valid) return;
+    path = saved;
+    const last = path[path.length-1];
+    focusedId = nodeId(last.grade, last.unit);
+  }catch(e){ /* ignore corrupt storage */ }
+}
+
+loadSavedPath();
 renderAccordion();
 renderTrail();
+if(focusedId){
+  const [g,u] = focusedId.split('|');
+  const sec = document.getElementById('section-'+g);
+  if(sec) sec.classList.add('open');
+  syncOpenHeights();
+  const activeEl = document.getElementById('item-'+focusedId);
+  if(activeEl) activeEl.classList.add('active');
+}
 window.addEventListener('resize', syncOpenHeights);
 </script>
 </body>
