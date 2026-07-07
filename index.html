@@ -571,6 +571,29 @@ const ROLE_INFO = {
     td_programs:["Executive education, SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role"]
   }
 };
+const VERTICAL_TD = {
+  "Procurement":{
+    "JG1-3":{td_technical:["Cross-functional SCM process training","Intermediate Excel/reporting","Basic negotiation","Vendor management basics"], td_behavioral:["Structured problem-solving","Stakeholder communication","EOS 101 fundamentals"], td_programs:["Supply Chain 101","Project Management 101","STEP UP CASME edition overview","Industry-related exhibits","DPSM (partial)","Import/Export"]},
+    "JG4-6":{td_technical:["KPI & dashboard management","Cost/budget literacy","Contract & SLA management"], td_behavioral:["People supervision & coaching","Conflict resolution","GWC-based performance management","Decision analysis"], td_programs:["PGB Manager AI orientation","EOS Leadership fundamentals","First-line leadership program","DPSM (full module)","Strategic Purchasing"]},
+    "JG7-9":{td_technical:["Strategic sourcing & category management","Supply chain risk & scenario planning","Business case modeling"], td_behavioral:["Executive stakeholder influence","Negotiation","Change management"], td_programs:["EOS Framework exposure","Cross-SBU rotation","Cost Management in Procurement","Spend Analysis"]},
+    "JG10-12":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role","EOS Integrator/Visionary exposure"]},
+    "JG13-15":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role","EOS Integrator/Visionary exposure"]}
+  },
+  "Warehouse & Logistics":{
+    "JG1-3":{td_technical:["Cross-functional SCM process training","Intermediate Excel/reporting","Vendor management basics"], td_behavioral:["Structured problem-solving","Stakeholder communication","EOS 101 fundamentals"], td_programs:["Supply Chain 101 (Construction; Maritime; Human Development)","Project Management 101","STEP UP CASME overview"]},
+    "JG4-6":{td_technical:["KPI & dashboard management","Cost/budget literacy","Contract & SLA management","Principles of layouting","WMS governance"], td_behavioral:["People supervision & coaching","Conflict resolution","GWC-based performance management"], td_programs:["PGB Manager AI orientation","EOS Leadership fundamentals","First-line leadership program","DPSM (functional-related module)"]},
+    "JG7-9":{td_technical:["Strategic inventory management","Supply chain risk & scenario planning","Business case modeling"], td_behavioral:["Executive stakeholder influence","Negotiation","Change management"], td_programs:["EOS Framework exposure","Cross-SBU rotation","DPSM (full module)"]},
+    "JG10-12":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role","EOS Integrator/Visionary exposure"]},
+    "JG13-15":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role","EOS Integrator/Visionary exposure"]}
+  },
+  "Sourcing & Vendor Management":{
+    "JG1-3":{td_technical:["Cross-functional SCM process training","Intermediate Excel/reporting","Vendor management basics","Strategic sourcing fundamentals","Procurement & ERP systems","SVM bootcamp"], td_behavioral:["Basic problem-solving","Stakeholder communication","EOS 101 fundamentals","Time management & prioritization","Customer service"], td_programs:["SCM 101"]},
+    "JG4-6":{td_technical:["KPI & dashboard management","Vendor evaluation & due diligence","Vendor risk assessment & compliance","DPSM targeted modules"], td_behavioral:["Conflict resolution","Presentation & facilitation skills","GWC-based performance management"], td_programs:["Basic AI orientation","EOS Leadership fundamentals"]},
+    "JG7-9":{td_technical:["Strategic sourcing & category management","Supply chain risk & scenario planning","Business case modeling"], td_behavioral:["First-line leadership program","Executive stakeholder influence","Negotiation","Change management"], td_programs:["EOS Integrator/Visionary exposure","Cross-SBU rotation","External SCM strategy certification"]},
+    "JG10-12":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role"]},
+    "JG13-15":{td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"], td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"], td_programs:["Executive education in SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role"]}
+  }
+};
 const LATERAL_TD = {
   "Procurement":{
     orientation:"Sourcing & supplier selection fundamentals; purchase order and contract administration basics; procurement compliance and documentation standards.",
@@ -578,7 +601,7 @@ const LATERAL_TD = {
     programs:"Procurement 101 shadow week; paired mentor from the receiving unit; PGB procurement systems training."
   },
   "Warehouse & Logistics":{
-    orientation:"Inventory systems and control basics; warehouse safety fundamentals; distribution and logistics planning basics.",
+    orientation:"Warehouse Management; inventory systems and control basics; warehouse safety fundamentals; distribution and logistics planning basics.",
     behavioral:"Adjusting to a more operations-floor culture; adopting a safety-first mindset.",
     programs:"Warehouse operations shadow week; safety certification; paired mentor from the receiving unit."
   },
@@ -645,7 +668,7 @@ function getNode(grade,unit){
     title: TITLE_TEMPLATE[grade](unit),
     func: FUNCTION_TEMPLATE[grade](unit),
     time: TIME_BY_GRADE[grade],
-    info: ROLE_INFO[grade]
+    info: { ...ROLE_INFO[grade], ...VERTICAL_TD[unit][grade] }
   };
 }
 function computeMoves(grade,unit){
@@ -943,7 +966,7 @@ function openPathForward(){
       </div>`;
 
     if(mt === 'vertical'){
-      const info = ROLE_INFO[to.grade];
+      const info = VERTICAL_TD[to.unit][to.grade];
       body += pfField('Technical', tdListToText(info.td_technical));
       body += pfField('Behavioral / Leadership', tdListToText(info.td_behavioral));
       body += pfField('Recommended Programs', tdListToText(info.td_programs));
@@ -954,7 +977,7 @@ function openPathForward(){
       body += pfField('Recommended Programs', info.programs);
     } else if(mt === 'diagonal'){
       const info = DIAGONAL_TD[to.unit];
-      const vinfo = ROLE_INFO[to.grade];
+      const vinfo = VERTICAL_TD[to.unit][to.grade];
       body += pfField('Functional Bridge Needed', info.functional);
       body += pfField('Leadership Bridge Needed', tdListToText(vinfo.td_behavioral));
       body += pfField('Support Structure', info.support);
