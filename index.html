@@ -126,6 +126,60 @@
     cursor:pointer;
   }
 
+  #pathForwardBar{
+    position:sticky;
+    top:53px;
+    z-index:19;
+    background:#fff;
+    border-bottom:1px solid var(--grey-light);
+    padding:8px 12px;
+  }
+  #pathForwardBtn{
+    width:100%;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:11px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .pf-step{
+    padding:14px 18px;
+    border-bottom:1px solid var(--grey-light);
+  }
+  .pf-step-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:.9rem;
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:8px;
+  }
+  .pf-step-badge{
+    flex:none;
+    font-size:.68rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    padding:3px 9px;
+    border-radius:8px;
+    color:#fff;
+  }
+  .pf-field{margin-bottom:8px;}
+  .pf-field-label{font-size:.72rem;font-weight:700;color:var(--navy);margin-bottom:2px;}
+  .pf-field-text{font-size:.83rem;line-height:1.45;color:#333;margin:0;}
+  .pf-summary{
+    padding:14px 18px;
+    background:var(--cream);
+    font-size:.85rem;
+    color:var(--navy);
+    line-height:1.5;
+  }
+
   main{padding:14px 12px 100px;}
 
   /* Accordion */
@@ -385,8 +439,22 @@
   <div class="trail-scroll" id="trailScroll"></div>
   <button class="clear-btn" onclick="clearPath()">Clear</button>
 </div>
+<div id="pathForwardBar" style="display:none;">
+  <button id="pathForwardBtn" onclick="openPathForward()">See Your Path Forward &#8250;</button>
+</div>
 
 <main id="accordion"></main>
+
+<!-- Path Forward panel -->
+<div class="drawer-backdrop" id="pathForwardBackdrop" onclick="if(event.target===this)closePathForward()"></div>
+<div class="drawer" id="pathForwardPanel">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head" id="pathForwardHead"></div>
+  <div id="pathForwardBody"></div>
+  <div class="drawer-actions">
+    <button class="btn-close" style="flex:1;" onclick="closePathForward()">Close</button>
+  </div>
+</div>
 
 <!-- Legend modal -->
 <div class="modal-backdrop" id="legendBackdrop" onclick="if(event.target===this)toggleLegend(false)">
@@ -496,6 +564,37 @@ const ROLE_INFO = {
     td_technical:["Enterprise risk & resilience strategy","Group-wide policy design","M&A/expansion due diligence"],
     td_behavioral:["Board-level communication","Organizational change leadership","Mentoring future leaders"],
     td_programs:["Executive education, SCM strategy","Group Leadership Team engagement","Succession mentor/sponsor role"]
+  }
+};
+const LATERAL_TD = {
+  "Procurement":{
+    orientation:"Sourcing & supplier selection fundamentals; purchase order and contract administration basics; procurement compliance and documentation standards.",
+    behavioral:"Building credibility with a new set of stakeholders; consciously unlearning the prior unit's process assumptions.",
+    programs:"Procurement 101 shadow week; paired mentor from the receiving unit; PGB procurement systems training."
+  },
+  "Warehouse & Logistics":{
+    orientation:"Inventory systems and control basics; warehouse safety fundamentals; distribution and logistics planning basics.",
+    behavioral:"Adjusting to a more operations-floor culture; adopting a safety-first mindset.",
+    programs:"Warehouse operations shadow week; safety certification; paired mentor from the receiving unit."
+  },
+  "Sourcing & Vendor Management":{
+    orientation:"Sourcing, vendor onboarding and accreditation process; vendor risk & compliance basics; strategic vendor negotiation fundamentals.",
+    behavioral:"Shifting from an internal-process focus to an external-relationship focus.",
+    programs:"Vendor management shadow week; paired mentor from the receiving unit; SLA/contract training module."
+  }
+};
+const DIAGONAL_TD = {
+  "Procurement":{
+    functional:"All of the Procurement Lateral orientation, plus the Functional Competency targets for the destination grade band.",
+    support:"A named mentor in Procurement with explicit coaching responsibility for the transition; a structured 6-12 month bridge plan with milestones; a formal check-in at 90 days."
+  },
+  "Warehouse & Logistics":{
+    functional:"All of the Warehouse & Logistics Lateral orientation, plus the Functional Competency targets for the destination grade band.",
+    support:"A named mentor in Warehouse & Logistics with explicit coaching responsibility for the transition; a structured 6-12 month bridge plan with milestones; a formal check-in at 90 days."
+  },
+  "Sourcing & Vendor Management":{
+    functional:"All of the Sourcing & Vendor Management Lateral orientation, plus the Functional Competency targets for the destination grade band.",
+    support:"A named mentor in Sourcing & Vendor Management with explicit coaching responsibility for the transition; a structured 6-12 month bridge plan with milestones; a formal check-in at 90 days."
   }
 };
 const CORE_LEADERSHIP = {
@@ -762,8 +861,10 @@ function clearPath(){
 }
 function renderTrail(){
   const scroll = document.getElementById('trailScroll');
+  const pfBar = document.getElementById('pathForwardBar');
   if(path.length===0){
     scroll.innerHTML = `<span class="trail-empty">Tap a role below to begin your path</span>`;
+    pfBar.style.display = 'none';
     return;
   }
   let html = '';
@@ -777,6 +878,94 @@ function renderTrail(){
   });
   scroll.innerHTML = html;
   scroll.scrollLeft = scroll.scrollWidth;
+
+  if(path.length >= 2){
+    pfBar.style.display = 'block';
+  } else {
+    pfBar.style.display = 'none';
+  }
+}
+
+function moveTypeLabel(t){
+  return {vertical:'Vertical', lateral:'Lateral', diagonal:'Diagonal'}[t] || t;
+}
+function moveTypeColorVar(t){
+  return {vertical:'var(--navy)', lateral:'var(--orange)', diagonal:'var(--diag)'}[t] || 'var(--navy)';
+}
+function pfField(label, text){
+  return `<div class="pf-field"><div class="pf-field-label">${label}</div><p class="pf-field-text">${text}</p></div>`;
+}
+function tdListToText(arr){
+  return arr.join(' \u00b7 ');
+}
+
+function openPathForward(){
+  if(path.length < 2) return;
+  const first = path[0];
+  const last = path[path.length-1];
+  const startTitle = TITLE_TEMPLATE[first.grade](first.unit);
+  const endTitle = TITLE_TEMPLATE[last.grade](last.unit);
+
+  const counts = {vertical:0, lateral:0, diagonal:0};
+  path.forEach(s => { if(s.moveType) counts[s.moveType]++; });
+  const countParts = [];
+  if(counts.vertical) countParts.push(`${counts.vertical} Vertical`);
+  if(counts.lateral) countParts.push(`${counts.lateral} Lateral`);
+  if(counts.diagonal) countParts.push(`${counts.diagonal} Diagonal`);
+
+  document.getElementById('pathForwardHead').innerHTML = `
+    <span class="unit-tag" style="background:${UNIT_HEX[last.unit]}">Destination: ${last.unit}</span>
+    <h2>${startTitle} &#8594; ${endTitle}</h2>
+    <div class="grade-line">${path.length - 1} move${path.length-1>1?'s':''}: ${countParts.join(', ')}</div>
+  `;
+
+  let body = `<div class="pf-summary">This is your development roadmap \u2014 the specific T&amp;D focus for each step of the path you built. Work through it step by step with your team member, starting from where they are today.</div>`;
+
+  for(let i=1;i<path.length;i++){
+    const from = path[i-1];
+    const to = path[i];
+    const fromTitle = TITLE_TEMPLATE[from.grade](from.unit);
+    const toTitle = TITLE_TEMPLATE[to.grade](to.unit);
+    const mt = to.moveType;
+    const color = moveTypeColorVar(mt);
+
+    body += `<div class="pf-step">
+      <div class="pf-step-title">
+        <span class="pf-step-badge" style="background:${color}">${moveTypeLabel(mt)}</span>
+        <span>Step ${i}: ${fromTitle} &#8594; ${toTitle}</span>
+      </div>`;
+
+    if(mt === 'vertical'){
+      const info = ROLE_INFO[to.grade];
+      body += pfField('Technical', tdListToText(info.td_technical));
+      body += pfField('Behavioral / Leadership', tdListToText(info.td_behavioral));
+      body += pfField('Recommended Programs', tdListToText(info.td_programs));
+    } else if(mt === 'lateral'){
+      const info = LATERAL_TD[to.unit];
+      body += pfField('Orientation Focus', info.orientation);
+      body += pfField('Behavioral Adjustment', info.behavioral);
+      body += pfField('Recommended Programs', info.programs);
+    } else if(mt === 'diagonal'){
+      const info = DIAGONAL_TD[to.unit];
+      const vinfo = ROLE_INFO[to.grade];
+      body += pfField('Functional Bridge Needed', info.functional);
+      body += pfField('Leadership Bridge Needed', tdListToText(vinfo.td_behavioral));
+      body += pfField('Support Structure', info.support);
+    }
+    body += `</div>`;
+  }
+
+  body += `<div class="pf-summary" style="background:#fff;border-top:1px solid var(--grey-light);">
+    <strong style="color:var(--diag);">Remember:</strong> the more moves in a path, and the more Diagonal moves it includes, the stronger the support structure needs to be. Don't skip the mentor and check-in steps for later moves in a longer path.
+  </div>`;
+
+  document.getElementById('pathForwardBody').innerHTML = body;
+  document.getElementById('pathForwardPanel').classList.add('show');
+  document.getElementById('pathForwardBackdrop').classList.add('show');
+}
+function closePathForward(){
+  document.getElementById('pathForwardPanel').classList.remove('show');
+  document.getElementById('pathForwardBackdrop').classList.remove('show');
 }
 
 renderAccordion();
